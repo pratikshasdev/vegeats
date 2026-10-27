@@ -1,0 +1,17 @@
+appId: ${APP_ID}
+name: appearance
+---
+- launchApp
+- tapOn: "Profile"
+- scrollUntilVisible:
+    element:
+      id: "theme-dark"
+    direction: DOWN
+- tapOn:
+    id: "theme-dark"
+- takeScreenshot: profile-dark
+- tapOn:
+    id: "theme-light"
+- takeScreenshot: profile-light
+- tapOn:
+    id: "theme-system"

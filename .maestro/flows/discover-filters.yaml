@@ -1,0 +1,26 @@
+appId: ${APP_ID}
+name: discover-filters
+---
+- launchApp
+- assertVisible: "Eat plant-forward"
+- tapOn:
+    id: "search-input"
+- inputText: "curry"
+- hideKeyboard
+- assertVisible: "Clear filters"
+- tapOn: "Clear filters"
+- tapOn:
+    id: "open-filters"
+- assertVisible: "Filters"
+- tapOn: "30 mi"
+- tapOn: "Highest rated"
+- tapOn:
+    id: "apply-filters"
+- assertVisible: "Eat plant-forward"
+- assertVisible: "Clear filters"
+- tapOn: "Clear filters"
+# Change the search city.
+- tapOn:
+    id: "change-location"
+- tapOn: "Detroit"
+- assertVisible: "Near Detroit"

@@ -1,0 +1,26 @@
+appId: ${APP_ID}
+name: sign-in-validation
+---
+- launchApp
+- tapOn: "Profile"
+- tapOn:
+    id: "profile-sign-in"
+- assertVisible: "Sign in to VegEats"
+- tapOn:
+    id: "email-submit"
+- assertVisible: "Enter a valid email address."
+- assertVisible: "Enter your password."
+- tapOn:
+    id: "go-sign-up"
+- assertVisible: "Create your account"
+- tapOn:
+    id: "email-input"
+- inputText: "tester@example.com"
+- tapOn:
+    id: "password-input"
+- inputText: "short"
+- hideKeyboard
+- tapOn:
+    id: "email-submit"
+- assertVisible: "Use at least 8 characters."
+- assertVisible: "Enter the name other people will see on your reviews."

@@ -1,0 +1,20 @@
+appId: ${APP_ID}
+name: onboarding
+---
+- launchApp:
+    clearState: true
+    permissions:
+      location: allow
+- assertVisible: "Find food that fits how you eat."
+- tapOn:
+    id: "welcome-start"
+- assertVisible: "What do you need from a menu?"
+- tapOn:
+    id: "tag-vegan"
+- tapOn:
+    id: "tag-gluten_free"
+- tapOn: "Save 2 and continue"
+- assertVisible: "Eat plant-forward"
+# The user's diet tags are pinned to the quick filters.
+- assertVisible:
+    id: "quick-gluten_free"

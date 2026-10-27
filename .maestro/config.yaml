@@ -1,0 +1,12 @@
+# Run all flows:   maestro test -e APP_ID=com.pratikshasdev.vegeats .maestro
+# Dev builds use APP_ID=com.pratikshasdev.vegeats.dev (APP_VARIANT=development).
+flows:
+  - "flows/*.yaml"
+executionOrder:
+  continueOnFailure: false
+  flowsOrder:
+    - onboarding
+    - discover-filters
+    - restaurant-detail
+    - sign-in-validation
+    - appearance

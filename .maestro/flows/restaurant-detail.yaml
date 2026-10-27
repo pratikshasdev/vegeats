@@ -1,0 +1,30 @@
+appId: ${APP_ID}
+name: restaurant-detail
+# Needs at least one approved restaurant near the search origin (run the import first).
+---
+- launchApp
+- tapOn:
+    id: "change-location"
+- tapOn: "Ann Arbor"
+- extendedWaitUntil:
+    visible:
+      id: "restaurant-card-.*"
+    timeout: 15000
+- tapOn:
+    id: "restaurant-card-.*"
+    index: 0
+- assertVisible:
+    id: "restaurant-name"
+- assertVisible: "Menu"
+- assertVisible:
+    id: "action-directions"
+# Signed-out users are asked to sign in before reviewing.
+- tapOn:
+    id: "action-review"
+- assertVisible: "Sign in to write a review"
+- back
+- scrollUntilVisible:
+    element:
+      id: "report-listing"
+    direction: DOWN
+- assertVisible: "Report incorrect info"

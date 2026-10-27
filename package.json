@@ -1,0 +1,87 @@
+{
+  "name": "vegeats",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "dependencies": {
+    "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
+    "@expo/ui": "~58.0.24",
+    "@expo/vector-icons": "^15.0.2",
+    "@supabase/supabase-js": "^2.118.0",
+    "@tanstack/react-query": "^5.105.0",
+    "expo": "~58.0.20",
+    "expo-apple-authentication": "~58.0.2",
+    "expo-auth-session": "~58.0.15",
+    "expo-constants": "~58.0.13",
+    "expo-crypto": "~58.0.7",
+    "expo-device": "~58.0.5",
+    "expo-font": "~58.0.10",
+    "expo-glass-effect": "~58.0.5",
+    "expo-haptics": "~58.0.7",
+    "expo-image": "~58.0.17",
+    "expo-image-manipulator": "~58.0.15",
+    "expo-image-picker": "~58.0.10",
+    "expo-linking": "~58.0.14",
+    "expo-location": "~58.0.19",
+    "expo-maps": "~58.0.10",
+    "expo-router": "~58.0.27",
+    "expo-splash-screen": "~58.0.11",
+    "expo-sqlite": "~58.0.14",
+    "expo-status-bar": "~58.0.4",
+    "expo-symbols": "~58.0.4",
+    "expo-system-ui": "~58.0.6",
+    "expo-web-browser": "~58.0.7",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.0",
+    "react-native-gesture-handler": "~3.3.0",
+    "react-native-reanimated": "4.7.1",
+    "react-native-safe-area-context": "~5.10.1",
+    "react-native-screens": "~4.30.0",
+    "react-native-url-polyfill": "^4.0.0",
+    "react-native-web": "~0.21.4",
+    "react-native-worklets": "0.13.0",
+    "zustand": "^5.0.16"
+  },
+  "devDependencies": {
+    "@testing-library/react-native": "^14.1.0",
+    "@types/jest": "^30.0.0",
+    "@types/react": "~19.3.0",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~58.0.4",
+    "jest": "^30.5.2",
+    "jest-expo": "^58.0.12",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "lint": "expo lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "typecheck": "tsc --noEmit",
+    "test:functions": "deno test supabase/functions/_shared/",
+    "e2e": "maestro test -e APP_ID=com.pratikshasdev.vegeats .maestro",
+    "icons": "python3 scripts/generate-icons.py"
+  },
+  "private": true,
+  "jest": {
+    "preset": "jest-expo",
+    "setupFiles": [
+      "<rootDir>/jest.setup.tsx"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/supabase/",
+      "/.maestro/"
+    ],
+    "transformIgnorePatterns": [
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@supabase/.*|zustand|@tanstack/.*)"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/lib/database.types.ts"
+    ]
+  }
+}
