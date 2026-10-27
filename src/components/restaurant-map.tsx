@@ -1,10 +1,12 @@
 import { AppleMaps, GoogleMaps, type CameraMoveEvent } from 'expo-maps';
 import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import type { Bounds, RestaurantSummary } from '@/api/restaurants';
 import { dietLevelColors } from '@/lib/tags';
 import { useTheme } from '@/theme/theme';
+
+import { EmptyState } from './ui/feedback';
 
 export interface RestaurantMapHandle {
   recenter: (lat: number, lng: number, zoom?: number) => void;
@@ -16,6 +18,8 @@ export interface RestaurantMapProps {
   onSelect: (id: string) => void;
   onBoundsChange: (bounds: Bounds) => void;
   showUserLocation: boolean;
+  /** When set, the native map is not mounted (e.g. no Google Maps key on Android). */
+  unavailableReason?: 'missing-android-key' | 'unsupported';
 }
 
 export const DEFAULT_ZOOM = 12;
@@ -33,7 +37,7 @@ export function boundsFromCamera(e: CameraMoveEvent): Bounds | null {
 }
 
 export const RestaurantMap = forwardRef<RestaurantMapHandle, RestaurantMapProps>(function RestaurantMap(
-  { center, restaurants, onSelect, onBoundsChange, showUserLocation },
+  { center, restaurants, onSelect, onBoundsChange, showUserLocation, unavailableReason },
   ref,
 ) {
   const { colors, scheme } = useTheme();
@@ -62,6 +66,18 @@ export const RestaurantMap = forwardRef<RestaurantMapHandle, RestaurantMapProps>
   const onMarkerClick = (m: { id?: string }) => {
     if (m.id) onSelect(m.id);
   };
+
+  if (unavailableReason) {
+    return (
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.primaryTint, justifyContent: 'center' }]}>
+        <EmptyState
+          icon="map-outline"
+          title="Map isn't set up on Android yet"
+          body="Add a Google Maps key (GOOGLE_MAPS_ANDROID_API_KEY) and rebuild to see the map. The list below shows the same places."
+        />
+      </View>
+    );
+  }
 
   if (Platform.OS === 'ios') {
     return (

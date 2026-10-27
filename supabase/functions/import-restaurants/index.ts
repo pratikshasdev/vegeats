@@ -1,7 +1,8 @@
 // import-restaurants: pulls vegan / vegetarian listings for Michigan cities from
 // Google Places (New) and Yelp Fusion, merges duplicates, and upserts them.
 //
-// Invoke (admin JWT or service-role key):
+// Invoke from SQL:  select public.trigger_import('{"cities":["Ann Arbor"],"dryRun":true}');
+// Or over HTTP with an admin JWT or the service-role key:
 //   POST /functions/v1/import-restaurants
 //   { "cities": ["Ann Arbor", "Detroit"], "dryRun": false }
 // Omit "cities" to import every city in MICHIGAN_CITIES.
@@ -141,9 +142,13 @@ Deno.serve(async (req) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
 
-  // Authorize: service-role key, or a signed-in admin.
+  // Authorize: the database trigger token (public.trigger_import), the service-role key, or a signed-in admin.
+  const importToken = req.headers.get("x-import-token");
   const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ?? "";
-  if (token !== serviceKey) {
+  if (importToken) {
+    const { data: ok, error } = await admin.rpc("verify_import_token", { p_token: importToken });
+    if (error || !ok) return json({ error: "Unauthorized" }, 401);
+  } else if (token !== serviceKey) {
     const { data: userData, error } = await admin.auth.getUser(token);
     if (error || !userData.user) return json({ error: "Unauthorized" }, 401);
     const { data: profile } = await admin.from("profiles").select("role").eq("id", userData.user.id).single();

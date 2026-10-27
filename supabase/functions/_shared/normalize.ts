@@ -11,7 +11,7 @@ export interface GooglePlace {
   id: string;
   displayName?: { text: string };
   formattedAddress?: string;
-  addressComponents?: { longText: string; shortText: string; types: string[] }[];
+  addressComponents?: { longText?: string; shortText?: string; types?: string[] }[];
   location?: { latitude: number; longitude: number };
   rating?: number;
   userRatingCount?: number;
@@ -141,8 +141,8 @@ export function yelpCuisines(categories: YelpBusiness["categories"] = []): strin
 }
 
 function component(place: GooglePlace, type: string, short = false): string | null {
-  const c = place.addressComponents?.find((a) => a.types.includes(type));
-  return c ? (short ? c.shortText : c.longText) : null;
+  const c = place.addressComponents?.find((a) => a.types?.includes(type));
+  return (c && (short ? c.shortText : c.longText)) || null;
 }
 
 export function normalizeName(name: string): string {

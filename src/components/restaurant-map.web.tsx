@@ -16,6 +16,7 @@ export interface RestaurantMapProps {
   onSelect: (id: string) => void;
   onBoundsChange: (bounds: Bounds) => void;
   showUserLocation: boolean;
+  unavailableReason?: 'missing-android-key' | 'unsupported';
 }
 
 export const DEFAULT_ZOOM = 12;

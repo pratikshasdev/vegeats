@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
-import { FlatList, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { type Bounds, useRestaurantSearch } from '@/api/restaurants';
@@ -11,11 +11,15 @@ import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
 import { useSearchOrigin } from '@/hooks/use-location';
+import { nativeMapStatus } from '@/lib/maps-availability';
 import { formatDistance } from '@/lib/format';
 import { useFilters } from '@/stores/filters';
 import { usePreferences } from '@/stores/preferences';
 import { useTheme } from '@/theme/theme';
 import { radius, space, TAB_TOP_OFFSET } from '@/theme/tokens';
+
+const MAP_STATUS = nativeMapStatus();
+const HAS_MAP = MAP_STATUS === 'available';
 
 const boundsMoved = (a: Bounds | null, b: Bounds | null) => {
   if (!a || !b) return a !== b;
@@ -59,13 +63,14 @@ export default function MapScreen() {
   const search = useRestaurantSearch(params);
   const results = search.data ?? [];
   const selected = results.find((r) => r.id === selectedId) ?? null;
-  const showSearchArea = Platform.OS !== 'web' && boundsMoved(visibleBounds, searchBounds) && visibleBounds !== null && searchBounds !== null;
+  const showSearchArea = HAS_MAP && boundsMoved(visibleBounds, searchBounds) && visibleBounds !== null && searchBounds !== null;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={{ flex: Platform.OS === 'web' ? 0 : 1, height: Platform.OS === 'web' ? 260 : undefined }}>
+      <View style={{ flex: HAS_MAP ? 1 : 0, height: HAS_MAP ? undefined : 260 }}>
         <RestaurantMap
           ref={mapRef}
+          unavailableReason={HAS_MAP ? undefined : MAP_STATUS}
           center={origin}
           restaurants={results}
           showUserLocation={permission === 'granted'}
@@ -105,7 +110,7 @@ export default function MapScreen() {
           )}
         </View>
 
-        {Platform.OS !== 'web' && (
+        {HAS_MAP && (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Center on my location"
@@ -119,7 +124,7 @@ export default function MapScreen() {
           </Pressable>
         )}
 
-        {selected && Platform.OS !== 'web' && (
+        {selected && HAS_MAP && (
           <View style={[styles.selectedCard, { backgroundColor: colors.surface, bottom: insets.bottom + 72 }]}>
             <Pressable accessibilityLabel="Close" onPress={() => setSelectedId(null)} style={styles.close} hitSlop={10}>
               <Icon name="close" size={20} color={colors.textMuted} />
@@ -129,7 +134,7 @@ export default function MapScreen() {
         )}
       </View>
 
-      {Platform.OS === 'web' && (
+      {!HAS_MAP && (
         <FlatList
           data={results}
           keyExtractor={(r) => r.id}
@@ -138,7 +143,7 @@ export default function MapScreen() {
         />
       )}
 
-      {search.data && results.length === 0 && Platform.OS !== 'web' && (
+      {search.data && results.length === 0 && HAS_MAP && (
         <View style={[styles.emptyToast, { backgroundColor: colors.surface, bottom: insets.bottom + 90 }]}>
           <Text variant="small">No matching places in this area. Zoom out or change filters.</Text>
         </View>

@@ -116,3 +116,11 @@ Deno.test("mergeSources de-duplicates across Google and Yelp", () => {
   assertEquals(merged[0].cover_photo_url, "https://yelp-photo");
   assertEquals(merged[1].yelp_id, "y2");
 });
+
+Deno.test("fromGoogle tolerates address components without types", () => {
+  const row = fromGoogle({
+    ...googlePlace,
+    addressComponents: [{ longText: "Plaza" }, ...googlePlace.addressComponents],
+  }, null)!;
+  assertEquals(row.city, "Ann Arbor");
+});
