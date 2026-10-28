@@ -61,6 +61,7 @@ function RootStack() {
         <Stack.Screen name="diet-preferences" options={{ ...modal, title: 'Your diet' }} />
         <Stack.Screen name="filters" options={sheet} />
         <Stack.Screen name="location" options={{ ...sheet, sheetAllowedDetents: [0.7] }} />
+        <Stack.Screen name="delete-account" options={{ ...modal, title: 'Delete account' }} />
         <Stack.Screen name="moderation" options={{ title: 'Review queue' }} />
         <Stack.Screen name="auth/callback" options={{ headerShown: false }} />
       </Stack>

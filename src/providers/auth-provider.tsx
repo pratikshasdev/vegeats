@@ -26,10 +26,26 @@ interface AuthContextValue {
   sendPasswordReset: (email: string) => Promise<void>;
   signInWithProvider: (provider: OAuthProvider) => Promise<boolean>;
   signOut: () => Promise<void>;
+  /** Permanently deletes the account and its reviews and photos, then signs out on this device. */
+  deleteAccount: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+/** Pull the `{ error }` message out of an Edge Function error response when there is one. */
+export async function functionErrorMessage(error: unknown): Promise<string> {
+  const context = (error as { context?: { json?: () => Promise<unknown> } } | null)?.context;
+  if (context?.json) {
+    try {
+      const body = (await context.json()) as { error?: string } | null;
+      if (body?.error) return body.error;
+    } catch {
+      // Not JSON; fall through to the generic message.
+    }
+  }
+  return (error as Error | null)?.message ?? 'Something went wrong. Try again.';
+}
 
 export const AUTH_REDIRECT_PATH = 'auth/callback';
 
@@ -184,6 +200,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
       async signOut() {
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
+      },
+      async deleteAccount() {
+        const { error } = await supabase.functions.invoke('delete-account', { method: 'POST' });
+        if (error) throw new Error(await functionErrorMessage(error));
+        // The server session is already gone; just clear this device.
+        await supabase.auth.signOut({ scope: 'local' });
+        await queryClient.invalidateQueries();
       },
       async refreshProfile() {
         if (session) await loadProfile(session.user.id);

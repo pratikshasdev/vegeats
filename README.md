@@ -11,7 +11,7 @@ iOS and Android app built with Expo (React Native + TypeScript) and Supabase.
 - **Map**: Apple Maps on iOS, Google Maps on Android, with a "search this area" button.
 - **Restaurant pages**: menus grouped by section, a "Fits your diet" mark on each matching dish, hours with open-now status, photos, reviews, and directions, call and website links.
 - **Community**: reviews and ratings, adding restaurants and dishes, menu and dish photo uploads, and reporting incorrect info. Admins moderate everything in a review queue.
-- **Accounts**: email and password, Google, and Apple sign-in. Your diet preferences sync to your account.
+- **Accounts**: email and password, Google, and Apple sign-in. Your diet preferences sync to your account, and you can delete your account (with its reviews and photos) from Profile.
 - **Appearance**: dark mode, following the device or set manually.
 - **Data import**: an Edge Function that loads listings from Google Places and Yelp.
 

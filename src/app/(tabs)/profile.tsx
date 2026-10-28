@@ -226,6 +226,15 @@ export default function ProfileScreen() {
           }
         />
       )}
+      {user && (
+        <Button
+          testID="delete-account"
+          label="Delete account"
+          variant="ghost"
+          onPress={() => router.push('/delete-account')}
+          accessibilityHint="Permanently deletes your account, reviews and photos"
+        />
+      )}
       <Text variant="caption" tone="muted" align="center">
         VegEats {Constants.expoConfig?.version ?? ''}
       </Text>
