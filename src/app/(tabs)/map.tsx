@@ -9,11 +9,12 @@ import { RestaurantMap, type RestaurantMapHandle } from '@/components/restaurant
 import { RestaurantCard } from '@/components/restaurant-card';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
+import { EmptyState, Skeleton } from '@/components/ui/feedback';
 import { Text } from '@/components/ui/text';
 import { useSearchOrigin } from '@/hooks/use-location';
 import { nativeMapStatus } from '@/lib/maps-availability';
 import { formatDistance } from '@/lib/format';
-import { useFilters } from '@/stores/filters';
+import { activeFilterCount, useFilters } from '@/stores/filters';
 import { usePreferences } from '@/stores/preferences';
 import { useTheme } from '@/theme/theme';
 import { radius, space, TAB_TOP_OFFSET } from '@/theme/tokens';
@@ -63,14 +64,90 @@ export default function MapScreen() {
   const search = useRestaurantSearch(params);
   const results = search.data ?? [];
   const selected = results.find((r) => r.id === selectedId) ?? null;
-  const showSearchArea = HAS_MAP && boundsMoved(visibleBounds, searchBounds) && visibleBounds !== null && searchBounds !== null;
+  const showSearchArea = boundsMoved(visibleBounds, searchBounds) && visibleBounds !== null && searchBounds !== null;
+
+  const searchPill = (
+    <Pressable
+      accessibilityRole="search"
+      accessibilityLabel="Search restaurants"
+      onPress={() => router.navigate('/')}
+      style={[styles.searchPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <Icon name="search" size={18} color={colors.textMuted} />
+      <Text tone={filters.query ? 'default' : 'muted'} numberOfLines={1} style={{ flex: 1 }}>
+        {filters.query || `Search near ${origin.label}`}
+      </Text>
+    </Pressable>
+  );
+
+  if (!HAS_MAP) {
+    // No native map (Android without a Google Maps key, or web): show the same results as a list.
+    const hasFilters = activeFilterCount(filters) > 0 || !!filters.query;
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ paddingTop: insets.top + space.sm + TAB_TOP_OFFSET, paddingHorizontal: space.lg, gap: space.sm }}>
+          {searchPill}
+          <View style={{ marginHorizontal: -space.lg }}>
+            <QuickFilters />
+          </View>
+          {MAP_STATUS === 'missing-android-key' && (
+            <View testID="map-unavailable" style={[styles.notice, { backgroundColor: colors.primaryTint }]}>
+              <Icon name="map-outline" size={18} color={colors.primary} />
+              <Text variant="small" color={colors.primary} style={{ flex: 1 }}>
+                Map view needs a Google Maps key on Android. Showing places as a list.
+              </Text>
+            </View>
+          )}
+        </View>
+        <FlatList
+          data={results}
+          keyExtractor={(r) => r.id}
+          contentContainerStyle={{ padding: space.lg, gap: space.xl, flexGrow: 1 }}
+          renderItem={({ item }) => <RestaurantCard restaurant={item} highlightTags={dietTags} />}
+          ListEmptyComponent={
+            search.isPending ? (
+              <View style={{ gap: space.sm }}>
+                <Skeleton style={{ height: 180 }} />
+                <Skeleton style={{ height: 20, width: '60%' }} />
+              </View>
+            ) : search.isError ? (
+              <EmptyState
+                icon="cloud-offline-outline"
+                title="Couldn't load places"
+                body="Check your connection and try again."
+                actionLabel="Retry"
+                onAction={() => search.refetch()}
+              />
+            ) : hasFilters ? (
+              <EmptyState
+                icon="options-outline"
+                title="Nothing matches these filters"
+                body={`No places within ${filters.radiusMiles} mi of ${origin.label} match. Try clearing filters or a wider distance.`}
+                actionLabel="Clear filters"
+                onAction={() => {
+                  filters.reset();
+                  filters.setQuery('');
+                }}
+              />
+            ) : (
+              <EmptyState
+                icon="leaf-outline"
+                title={`No places near ${origin.label} yet`}
+                body="Try a wider distance or a different city."
+                actionLabel="Change location"
+                onAction={() => router.push('/location')}
+              />
+            )
+          }
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={{ flex: HAS_MAP ? 1 : 0, height: HAS_MAP ? undefined : 260 }}>
+      <View style={{ flex: 1 }}>
         <RestaurantMap
           ref={mapRef}
-          unavailableReason={HAS_MAP ? undefined : MAP_STATUS}
           center={origin}
           restaurants={results}
           showUserLocation={permission === 'granted'}
@@ -82,16 +159,7 @@ export default function MapScreen() {
         />
 
         <View style={[styles.topBar, { top: insets.top + space.sm + TAB_TOP_OFFSET }]} pointerEvents="box-none">
-          <Pressable
-            accessibilityRole="search"
-            accessibilityLabel="Search restaurants"
-            onPress={() => router.navigate('/')}
-            style={[styles.searchPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Icon name="search" size={18} color={colors.textMuted} />
-            <Text tone={filters.query ? 'default' : 'muted'} numberOfLines={1} style={{ flex: 1 }}>
-              {filters.query || `Search near ${origin.label}`}
-            </Text>
-          </Pressable>
+          {searchPill}
           <View style={{ marginHorizontal: -space.lg }}>
             <QuickFilters />
           </View>
@@ -110,21 +178,19 @@ export default function MapScreen() {
           )}
         </View>
 
-        {HAS_MAP && (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Center on my location"
-            onPress={async () => {
-              const p = await locateMe();
-              const target = p ?? origin;
-              mapRef.current?.recenter(target.lat, target.lng);
-            }}
-            style={[styles.locateBtn, { backgroundColor: colors.surface, bottom: (selected ? 250 : 24) + insets.bottom + 60 }]}>
-            <Icon name="navigate" size={20} color={colors.primary} />
-          </Pressable>
-        )}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Center on my location"
+          onPress={async () => {
+            const p = await locateMe();
+            const target = p ?? origin;
+            mapRef.current?.recenter(target.lat, target.lng);
+          }}
+          style={[styles.locateBtn, { backgroundColor: colors.surface, bottom: (selected ? 250 : 24) + insets.bottom + 60 }]}>
+          <Icon name="navigate" size={20} color={colors.primary} />
+        </Pressable>
 
-        {selected && HAS_MAP && (
+        {selected && (
           <View style={[styles.selectedCard, { backgroundColor: colors.surface, bottom: insets.bottom + 72 }]}>
             <Pressable accessibilityLabel="Close" onPress={() => setSelectedId(null)} style={styles.close} hitSlop={10}>
               <Icon name="close" size={20} color={colors.textMuted} />
@@ -134,16 +200,7 @@ export default function MapScreen() {
         )}
       </View>
 
-      {!HAS_MAP && (
-        <FlatList
-          data={results}
-          keyExtractor={(r) => r.id}
-          contentContainerStyle={{ padding: space.lg, gap: space.xl }}
-          renderItem={({ item }) => <RestaurantCard restaurant={item} highlightTags={dietTags} />}
-        />
-      )}
-
-      {search.data && results.length === 0 && HAS_MAP && (
+      {search.data && results.length === 0 && (
         <View style={[styles.emptyToast, { backgroundColor: colors.surface, bottom: insets.bottom + 90 }]}>
           <Text variant="small">No matching places in this area. Zoom out or change filters.</Text>
         </View>
@@ -174,6 +231,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   centerRow: { alignItems: 'center' },
+  notice: { flexDirection: 'row', alignItems: 'center', gap: space.sm, padding: space.md, borderRadius: radius.md },
   locateBtn: {
     position: 'absolute',
     right: space.lg,
