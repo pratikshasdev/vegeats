@@ -1,7 +1,7 @@
 import * as Location from 'expo-location';
 import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { friendlyError } from '@/api/query-client';
 import { useSubmitRestaurant } from '@/api/restaurants';
@@ -48,6 +48,7 @@ export default function AddRestaurantScreen() {
     setServerError(null);
     setFilling(true);
     try {
+      if (Platform.OS === 'web') throw new Error('Filling the address from your location works in the iOS and Android app. Type it instead.');
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') throw new Error('Location is off. Type the address instead, or turn location on in Settings.');
       const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
@@ -74,6 +75,7 @@ export default function AddRestaurantScreen() {
     if (hasErrors(e)) return;
     try {
       const address = `${values.addressLine}, ${values.city}, ${values.region} ${values.postalCode}`.trim();
+      if (Platform.OS === 'web') throw new Error('Adding a restaurant works in the iOS and Android app.');
       const [geo] = await Location.geocodeAsync(address);
       if (!geo) throw new Error("We couldn't find that address on the map. Check the street and city.");
       const id = await submit.mutateAsync({

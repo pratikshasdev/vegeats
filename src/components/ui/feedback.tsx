@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AccessibilityInfo, Animated, StyleSheet, View, type ViewStyle } from 'react-native';
+import { AccessibilityInfo, Animated, Platform, StyleSheet, View, type ViewStyle } from 'react-native';
 
 import { useTheme } from '@/theme/theme';
 import { radius, space } from '@/theme/tokens';
@@ -73,8 +73,8 @@ export function Skeleton({ style }: { style?: ViewStyle }) {
     let cancelled = false;
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 0.5, duration: 700, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: Platform.OS !== 'web' }),
+        Animated.timing(opacity, { toValue: 0.5, duration: 700, useNativeDriver: Platform.OS !== 'web' }),
       ]),
     );
     AccessibilityInfo.isReduceMotionEnabled()

@@ -1,5 +1,6 @@
 import * as Location from 'expo-location';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -75,8 +76,11 @@ export function refreshDeviceLocation(prompt: boolean): Promise<Place | null> {
         (await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }));
       let label = 'Current location';
       try {
-        const [rev] = await Location.reverseGeocodeAsync(pos.coords);
-        if (rev?.city) label = rev.city;
+        // expo-location has no geocoding on web.
+        if (Platform.OS !== 'web') {
+          const [rev] = await Location.reverseGeocodeAsync(pos.coords);
+          if (rev?.city) label = rev.city;
+        }
       } catch {
         // Reverse geocoding is best-effort.
       }

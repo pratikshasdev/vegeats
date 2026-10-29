@@ -67,7 +67,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-sqlite',
     'expo-maps',
     'expo-web-browser',
-    'expo-font',
+    [
+      'expo-font',
+      { fonts: ['./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf'] },
+    ],
   ],
   experiments: {
     typedRoutes: true,

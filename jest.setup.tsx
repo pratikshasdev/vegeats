@@ -18,6 +18,11 @@ Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage, config
 
 jest.mock('expo-sqlite/localStorage/install', () => ({}));
 jest.mock('expo-haptics', () => ({ selectionAsync: jest.fn(() => Promise.resolve()) }));
+jest.mock('@expo/vector-icons/createIconSet', () => {
+  const { Text } = require('react-native');
+  const Icon = ({ name }: { name: string }) => <Text>{`icon:${name}`}</Text>;
+  return { __esModule: true, default: () => Icon };
+});
 jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = require('react-native');
   const Icon = ({ name }: { name: string }) => <Text>{`icon:${name}`}</Text>;
